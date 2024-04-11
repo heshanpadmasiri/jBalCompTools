@@ -15,7 +15,7 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:   "run [path]",
-	Short: "Run the current project or file",
+	Short: "Run project or file",
 	Run: func(cmd *cobra.Command, args []string) {
 		var targetPath string
 		if len(args) > 0 {
@@ -27,7 +27,7 @@ var runCmd = &cobra.Command{
 			}
 			targetPath = CurrentWorkingDir()
 		}
-		command, err := CreateCommand(viper.GetString("sourcePath"), viper.GetString("version"), "run", targetPath,
+		command, err := CreateCommand(viper.GetString("sourcePath"), viper.GetString("version"), targetPath, Run,
 			viper.GetBool("remote"))
 		if err != nil {
 			fmt.Println(err)

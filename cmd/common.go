@@ -12,20 +12,41 @@ import (
 	"path/filepath"
 )
 
-func CreateCommand(sourcePath, version, command, targetPath string, remoteDebug bool) (exec.Cmd, error) {
+type Command string
+
+const (
+	Run   Command = "run"
+	Build Command = "build"
+)
+
+func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool) (exec.Cmd, error) {
 	balPath := BalPath(sourcePath, version)
-	// if !fileExists(balPath) {
-	// 	return exec.Cmd{}, fmt.Errorf("bal executable not found at %s try running 'jBalCompTools build'", balPath)
-	// }
-	// if !fileExists(targetPath) {
-	// 	return exec.Cmd{}, fmt.Errorf("target path not found at %s", targetPath)
-	// }
-	args := []string{ command, targetPath }
-	if remoteDebug {
-		args = append(args, "--debug 5005")
+	switch command {
+	case Run:
+		return createRunCommand(balPath, targetPath, remoteDebug), nil
+	case Build:
+		return createBuildCommand(balPath, targetPath, remoteDebug), nil
+	default:
+		return exec.Cmd{}, fmt.Errorf("unknown command: %s", command)
 	}
+}
+
+func createBuildCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+	args := []string {"build", targetPath}
 	cmd := exec.Command(balPath, args...)
-	return *cmd, nil
+	if remoteDebug {
+		cmd.Env = append(os.Environ(), "BAL_JAVA_DEBUG=5005")
+	}
+	return *cmd
+}
+
+func createRunCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+	args := []string{"run"}
+	if remoteDebug {
+		args = append(args, "--debug", "5005")
+	}
+	args = append(args, targetPath)
+	return *exec.Command(balPath, args...)
 }
 
 func ExecuteCommand(cmd exec.Cmd) {
@@ -50,10 +71,4 @@ func CurrentWorkingDir() string {
 		os.Exit(1)
 	}
 	return dir
-}
-
-// TODO: remove this from run
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }

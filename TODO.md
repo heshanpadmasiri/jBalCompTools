@@ -7,6 +7,7 @@
 + [x] Run individual files
 + [x] Remote debug runtime
     + [ ] Make default port part for run control file
+    + [ ] Show the output while the command is running
 
 # Just compile Ballerina source
 + [ ] Compile projects
