@@ -5,7 +5,9 @@
 
 package main
 
-import "github.com/heshanpadmasiri/jBalCompTools/cmd"
+import (
+	"github.com/heshanpadmasiri/jBalCompTools/cmd"
+)
 
 func main() {
 	cmd.Execute()
