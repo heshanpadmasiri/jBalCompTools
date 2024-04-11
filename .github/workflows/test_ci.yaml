@@ -21,7 +21,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
+<<<<<<< HEAD
           go-version: '^1.20'
+=======
+          go-version: 1.20
+>>>>>>> Fix ci
 
       - name: Run tests
         run: go test ./...
