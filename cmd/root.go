@@ -1,7 +1,8 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+// Copyright (c) 2024 Heshan Padmasiri
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
 
-*/
 package cmd
 
 import (
@@ -9,8 +10,6 @@ import (
 
 	"github.com/spf13/cobra"
 )
-
-
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
