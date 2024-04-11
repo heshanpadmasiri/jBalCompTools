@@ -13,6 +13,9 @@
 + [ ] Compile individual files
 + [ ] Remote debug compiler
 
+# Run unit tests
++ [ ] Run unit tests on the given project
+
 # CI
 + [ ] Create unit tests to validate each command
 + [ ] Setup Github workflow to run them
