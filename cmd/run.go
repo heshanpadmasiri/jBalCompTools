@@ -15,9 +15,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// runCmd represents the run command
 var runCmd = &cobra.Command{
-	Use:   "run",
+	Use:   "run [path]",
 	Short: "Run the current project or file",
 	Run: func(cmd *cobra.Command, args []string) {
 		balPath := balPath(viper.GetString("sourcePath"), viper.GetString("version"))
@@ -45,11 +44,11 @@ var runCmd = &cobra.Command{
 }
 
 func runFile(balPath, filePath string, remoteDebug bool) {
+	args := []string{ "run", filePath }
 	if remoteDebug {
-		fmt.Println("Remote debugging not implemented yet")
-		os.Exit(1)
+		args = append(args, "--debug 5005")
 	}
-	cmd := exec.Command(balPath, "run", filePath)
+	cmd := exec.Command(balPath, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(string(output))
@@ -60,11 +59,11 @@ func runFile(balPath, filePath string, remoteDebug bool) {
 }
 
 func runProject(balPath, projectPath string, remoteDebug bool) {
+	args := []string{ "run"  }
 	if remoteDebug {
-		fmt.Println("Remote debugging not implemented yet")
-		os.Exit(1)
+		args = append(args, "--debug 5005")
 	}
-	cmd := exec.Command(balPath, "run")
+	cmd := exec.Command(balPath, args...)
 	cmd.Dir = projectPath
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -76,7 +75,6 @@ func runProject(balPath, projectPath string, remoteDebug bool) {
 }
 
 func init() {
-	// TODO: figure out how to set the path args so help message show it
 	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().BoolP("file", "f", false, "Run the given file")
 	runCmd.Flags().BoolP("remote", "r", false, "Remote debug the runtime")
