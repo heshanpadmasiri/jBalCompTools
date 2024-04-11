@@ -21,9 +21,14 @@ var runCmd = &cobra.Command{
 		if len(args) > 0 {
 			targetPath = args[0]
 		} else {
+			if (viper.GetBool("file")) {
+				fmt.Println("Please provide a file to run")
+				os.Exit(1)
+			}
 			targetPath = CurrentWorkingDir()
 		}
-		command, err := CreateCommand(viper.GetString("sourcePath"), viper.GetString("version"), "run", targetPath, viper.GetBool("remote"))
+		command, err := CreateCommand(viper.GetString("sourcePath"), viper.GetString("version"), "run", targetPath,
+			viper.GetBool("remote"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
