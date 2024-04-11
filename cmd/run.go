@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,12 +18,12 @@ var runCmd = &cobra.Command{
 	Use:   "run [path]",
 	Short: "Run the current project or file",
 	Run: func(cmd *cobra.Command, args []string) {
-		balPath := balPath(viper.GetString("sourcePath"), viper.GetString("version"))
+		balPath := BalPath(viper.GetString("sourcePath"), viper.GetString("version"))
 		if !fileExists(balPath) {
 			fmt.Printf("bal executable not found at %s try running 'jBalCompTools build'\n", balPath)
 			os.Exit(1)
 		}
-		cwd := currentWorkingDir()
+		cwd := CurrentWorkingDir()
 		isFile := viper.GetBool("file")
 		isRemoteDebug := viper.GetBool("remote")
 		if isFile {
@@ -82,21 +81,7 @@ func init() {
 	viper.BindPFlag("remote", runCmd.Flags().Lookup("remote"))
 }
 
-func currentWorkingDir() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error getting current working directory", err)
-		os.Exit(1)
-	}
-	return dir
-}
-
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
-}
-
-func balPath(srcPath, version string) string {
-	return filepath.Join(srcPath, "distribution", "zip", "jballerina-tools", "build", "extracted-distributions",
-		fmt.Sprintf("jballerina-tools-%s", version), "bin", "bal")
 }
