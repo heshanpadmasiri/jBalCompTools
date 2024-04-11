@@ -39,4 +39,8 @@ func init() {
 
 	rootCmd.PersistentFlags().StringP("sourcePath", "s",viper.GetString("defaultSourcePath"), "Path to jBallerina source code")
 	viper.BindPFlag("sourcePath", rootCmd.PersistentFlags().Lookup("sourcePath"))
+
+
+	rootCmd.PersistentFlags().StringP("version", "v",viper.GetString("defaultVersion"), "Version of jBallerina")
+	viper.BindPFlag("version", rootCmd.PersistentFlags().Lookup("version"))
 }
