@@ -24,11 +24,13 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // disCmd represents the dis command
@@ -40,8 +42,60 @@ var disCmd = &cobra.Command{
 			fmt.Println("Please provide the path to ballerina source/project to dissemble")
 			os.Exit(1)
 		}
-		fmt.Println("dis called")
+		compileAndDissemble(args[0])
 	},
+}
+
+func compileAndDissemble(path string) {
+	compileTarget(viper.GetString("sourcePath"), viper.GetString("version"), path)
+	jarName := getExpectedOutput(path)
+	if _, err := os.Stat(jarName); os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "Error: %s not found\n", jarName)
+		os.Exit(1)
+	}
+	createDisDir()
+	moveJarToDisDir(jarName)
+	disassemble(jarName)
+}
+
+func moveJarToDisDir(jarName string) {
+	disPath := filepath.Join("dis", jarName)
+	if err := os.Rename(jarName, disPath); err != nil {
+		fmt.Fprintf(os.Stderr, "Error moving jar file: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func createDisDir() {
+	disDir := "dis"
+	if _, err := os.Stat(disDir); err == nil {
+		if err := os.RemoveAll(disDir); err != nil {
+			fmt.Fprintf(os.Stderr, "Error deleting existing dis directory: %v\n", err)
+			os.Exit(1)
+		}
+	}
+	if err := os.Mkdir(disDir, os.ModePerm); err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating dis directory: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func disassemble(path string) {
+	fmt.Println("Disassembling jar file...")
+	cmd := exec.Command("jar", "-xf", path)
+	cmd.Dir = "dis"
+	err := cmd.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error running jar command: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func compileTarget(sourcePath, version, targetPath string) {
+	command, err := CreateCommand(sourcePath, version, targetPath, Build, false)
+	ConsumeError(err)
+	err = ExecuteCommand(&command)
+	ConsumeError(err)
 }
 
 func getExpectedOutput(path string) string {

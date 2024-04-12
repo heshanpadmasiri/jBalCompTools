@@ -25,7 +25,7 @@
     + [ ] Automatically create a release if the CI is passing
 
 # Disassemble generated jar file
-+ [ ] Extend underlying compile command to then disassemble the generated jar file
++ [x] Extend underlying compile command to then disassemble the generated jar file
 + [ ] Given the method and class name show the bytecode
 
 # Benchmark
