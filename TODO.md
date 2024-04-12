@@ -15,13 +15,13 @@
 + [x] Remote debug compiler
 
 # Run unit tests
-+ [ ] Run unit tests on the given project
++ [x] Run unit tests on the given project
 
 # CI
 + [ ] Create unit tests to validate each command
-+ [ ] Setup Github workflow to run them
-+ [ ] Create Github workflow to build the tool for different operating systems and create release
-    + Automatically create a release if the CI is passing
++ [x] Setup Github workflow to run them
++ [x] Create Github workflow to build the tool for different operating systems and create release
+    + [ ] Automatically create a release if the CI is passing
 
 # Disassemble generated jar file
 + [ ] Extend underlying compile command to then disassemble the generated jar file
