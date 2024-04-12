@@ -12,30 +12,47 @@ import (
 	"path/filepath"
 )
 
-func CreateCommand(sourcePath, version, command, targetPath string, remoteDebug bool) (exec.Cmd, error) {
+type Command string
+
+const (
+	Run   Command = "run"
+	Build Command = "build"
+)
+
+func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool) (exec.Cmd, error) {
 	balPath := BalPath(sourcePath, version)
-	// if !fileExists(balPath) {
-	// 	return exec.Cmd{}, fmt.Errorf("bal executable not found at %s try running 'jBalCompTools build'", balPath)
-	// }
-	// if !fileExists(targetPath) {
-	// 	return exec.Cmd{}, fmt.Errorf("target path not found at %s", targetPath)
-	// }
-	args := []string{ command, targetPath }
-	if remoteDebug {
-		args = append(args, "--debug 5005")
+	switch command {
+	case Run:
+		return createRunCommand(balPath, targetPath, remoteDebug), nil
+	case Build:
+		return createBuildCommand(balPath, targetPath, remoteDebug), nil
+	default:
+		return exec.Cmd{}, fmt.Errorf("unknown command: %s", command)
 	}
-	cmd := exec.Command(balPath, args...)
-	return *cmd, nil
 }
 
-func ExecuteCommand(cmd exec.Cmd) {
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(string(output))
-		fmt.Println(err)
-		os.Exit(1)
+func createBuildCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+	args := []string{"build", targetPath}
+	cmd := exec.Command(balPath, args...)
+	if remoteDebug {
+		cmd.Env = append(os.Environ(), "BAL_JAVA_DEBUG=5005")
 	}
-	fmt.Println(string(output))
+	return *cmd
+}
+
+func createRunCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+	args := []string{"run"}
+	if remoteDebug {
+		args = append(args, "--debug", "5005")
+	}
+	args = append(args, targetPath)
+	return *exec.Command(balPath, args...)
+}
+
+func ExecuteCommand(cmd *exec.Cmd) error {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func BalPath(srcPath, version string) string {
@@ -45,15 +62,13 @@ func BalPath(srcPath, version string) string {
 
 func CurrentWorkingDir() string {
 	dir, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error getting current working directory", err)
-		os.Exit(1)
-	}
+	ConsumeError(err)
 	return dir
 }
 
-// TODO: remove this from run
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
+func ConsumeError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
