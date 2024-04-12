@@ -6,8 +6,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -20,10 +18,7 @@ var buildCmd = &cobra.Command{
 	Short: "Build jBallerina compiler",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := buildCompiler(viper.GetString("sourcePath"), viper.GetString("flags"))
-		if (err != nil) {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		ConsumeError(err)
 	},
 }
 
@@ -34,14 +29,9 @@ func init() {
 }
 
 func buildCompiler(path, flags string) error {
-	// fmt.Println("DEBUG: ", path, flags)
 	args := strings.Split(strings.Trim(flags, " "), " ")
 	cmd := exec.Command("./gradlew", args...)
 	cmd.Dir = path
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(string(output))
-		return fmt.Errorf("failed to execute build command: %v", err)
-	}
-	return nil
+	return ExecuteCommand(cmd)
 }
+

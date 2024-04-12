@@ -32,7 +32,7 @@ func CreateCommand(sourcePath, version, targetPath string, command Command, remo
 }
 
 func createBuildCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
-	args := []string {"build", targetPath}
+	args := []string{"build", targetPath}
 	cmd := exec.Command(balPath, args...)
 	if remoteDebug {
 		cmd.Env = append(os.Environ(), "BAL_JAVA_DEBUG=5005")
@@ -49,14 +49,10 @@ func createRunCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
 	return *exec.Command(balPath, args...)
 }
 
-func ExecuteCommand(cmd exec.Cmd) {
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Println(string(output))
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Println(string(output))
+func ExecuteCommand(cmd *exec.Cmd) error {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func BalPath(srcPath, version string) string {
@@ -66,9 +62,13 @@ func BalPath(srcPath, version string) string {
 
 func CurrentWorkingDir() string {
 	dir, err := os.Getwd()
+	ConsumeError(err)
+	return dir
+}
+
+func ConsumeError(err error) {
 	if err != nil {
-		fmt.Println("Error getting current working directory", err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	return dir
 }

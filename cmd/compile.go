@@ -38,19 +38,17 @@ var compileCmd = &cobra.Command{
 		if len(args) > 0 {
 			targetPath = args[0]
 		} else {
-			if (viper.GetBool("file")) {
-				fmt.Println("Please provide a file to run")
+			if (viper.GetBool("file_comp")) {
+				fmt.Println("Please provide a file to compile")
 				os.Exit(1)
 			}
 			targetPath = CurrentWorkingDir()
 		}
 		command, err := CreateCommand(viper.GetString("sourcePath"), viper.GetString("version"), targetPath, Build,
-			viper.GetBool("remote"))
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		ExecuteCommand(command)
+			viper.GetBool("remote_comp"))
+		ConsumeError(err)
+		err = ExecuteCommand(&command)
+		ConsumeError(err)
 	},
 }
 
@@ -60,6 +58,6 @@ func init() {
 	compileCmd.Flags().BoolP("file", "f", false, "Run the given file")
 	compileCmd.Flags().BoolP("remote", "r", false, "Remote debug the runtime")
 
-	viper.BindPFlag("file", compileCmd.Flags().Lookup("file"))
-	viper.BindPFlag("remote", compileCmd.Flags().Lookup("remote"))
+	viper.BindPFlag("file_comp", compileCmd.Flags().Lookup("file"))
+	viper.BindPFlag("remote_comp", compileCmd.Flags().Lookup("remote"))
 }
