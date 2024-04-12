@@ -3,6 +3,7 @@ module github.com/heshanpadmasiri/jBalCompTools
 go 1.20
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
