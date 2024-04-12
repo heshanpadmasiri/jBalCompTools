@@ -1,6 +1,7 @@
 # Build jBallerina compiler
 + [x] Optionally set build flags
 + [ ] Make default flags configurable from the run control file
++ [ ] Make it possible to change the version from the tool instead of having to change it in `build.gradle`
 
 # Run Ballerina source
 + [x] Run projects
