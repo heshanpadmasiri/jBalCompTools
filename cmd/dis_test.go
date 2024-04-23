@@ -31,7 +31,7 @@ func TestGetExpectedOuput(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		actual := getExpectedOutput(tc.path)
+		actual := GetExpectedOutput(tc.path)
 		if actual != tc.expected {
 			t.Errorf("Expected getExpectedOutput(%s) to be %s, but got %s", tc.path, tc.expected, actual)
 		}

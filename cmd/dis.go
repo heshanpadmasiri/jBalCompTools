@@ -23,14 +23,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
-
-	"github.com/BurntSushi/toml"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // disCmd represents the dis command
@@ -47,8 +44,8 @@ var disCmd = &cobra.Command{
 }
 
 func compileAndDissemble(path string) {
-	compileTarget(viper.GetString("sourcePath"), viper.GetString("version"), path)
-	jarName := getExpectedOutput(path)
+	CompileTarget(viper.GetString("sourcePath"), viper.GetString("version"), path)
+	jarName := GetExpectedOutput(path)
 	if _, err := os.Stat(jarName); os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "Error: %s not found\n", jarName)
 		os.Exit(1)
@@ -91,65 +88,7 @@ func disassemble(path string) {
 	}
 }
 
-func compileTarget(sourcePath, version, targetPath string) {
-	command, err := CreateCommand(sourcePath, version, targetPath, Build, false)
-	ConsumeError(err)
-	err = ExecuteCommand(&command)
-	ConsumeError(err)
-}
-
-func getExpectedOutput(path string) string {
-	if isBallerinaProject(path) {
-		return getProjectExpectedOutput(path)
-	}
-	fileName := filepath.Base(path)
-	fileName = strings.TrimSuffix(fileName, ".bal")
-	fileName += ".jar"
-	return fileName
-}
-
-func getProjectExpectedOutput(path string) string {
-	balTomlPath := filepath.Join(path, "Ballerina.toml")
-	tomlContent, err := os.ReadFile(balTomlPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading Ballerina.toml file: %v\n", err)
-		os.Exit(1)
-	}
-
-	var config struct {
-		Package struct {
-			Name string `toml:"name"`
-		} `toml:"package"`
-	}
-
-	if err := toml.Unmarshal(tomlContent, &config); err != nil {
-		fmt.Fprintf(os.Stderr, "Error unmarshaling Ballerina.toml file: %v\n", err)
-		os.Exit(1)
-	}
-
-	name := config.Package.Name
-	return name + ".jar"
-}
-
-func isBallerinaProject(path string) bool {
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
-		fmt.Fprintf(os.Stderr, "Error getting file info at path %s: %v\n", path, err)
-		os.Exit(1)
-	}
-
-	if !fileInfo.IsDir() {
-		return false
-	}
-
-	tomlPath := filepath.Join(path, "Ballerina.toml")
-	_, err = os.Stat(tomlPath)
-	return err == nil
-}
-
+// TODO: move this to common
 func init() {
 	rootCmd.AddCommand(disCmd)
 }

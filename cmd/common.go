@@ -10,7 +10,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Command string
@@ -111,6 +114,65 @@ func PrettyPrintBenchmarkResult(result BenchmarkResult) {
 	fmt.Printf("Average time: %v\n", result.AvgTime)
 	fmt.Printf("Minimum time: %v\n", result.MinTime)
 	fmt.Printf("Maximum time: %v\n", result.MaxTime)
+}
+
+func CompileTarget(sourcePath, version, targetPath string) {
+	command, err := CreateCommand(sourcePath, version, targetPath, Build, false)
+	ConsumeError(err)
+	err = ExecuteCommand(&command)
+	ConsumeError(err)
+}
+
+func GetExpectedOutput(path string) string {
+	if isBallerinaProject(path) {
+		return getProjectExpectedOutput(path)
+	}
+	fileName := filepath.Base(path)
+	fileName = strings.TrimSuffix(fileName, ".bal")
+	fileName += ".jar"
+	return fileName
+}
+
+func isBallerinaProject(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+		fmt.Fprintf(os.Stderr, "Error getting file info at path %s: %v\n", path, err)
+		os.Exit(1)
+	}
+
+	if !fileInfo.IsDir() {
+		return false
+	}
+
+	tomlPath := filepath.Join(path, "Ballerina.toml")
+	_, err = os.Stat(tomlPath)
+	return err == nil
+}
+
+func getProjectExpectedOutput(path string) string {
+	balTomlPath := filepath.Join(path, "Ballerina.toml")
+	tomlContent, err := os.ReadFile(balTomlPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading Ballerina.toml file: %v\n", err)
+		os.Exit(1)
+	}
+
+	var config struct {
+		Package struct {
+			Name string `toml:"name"`
+		} `toml:"package"`
+	}
+
+	if err := toml.Unmarshal(tomlContent, &config); err != nil {
+		fmt.Fprintf(os.Stderr, "Error unmarshaling Ballerina.toml file: %v\n", err)
+		os.Exit(1)
+	}
+
+	name := config.Package.Name
+	return name + ".jar"
 }
 
 func BalPath(srcPath, version string) string {
