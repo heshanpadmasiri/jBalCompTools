@@ -30,8 +30,8 @@
 
 # Benchmark
 ## Direct measurements
-+ [ ] Measure compile time
-+ [ ] Measure execution time
++ [x] Measure compile time
++ [x] Measure execution time
 + [ ] Add ability to configure benchmarks (number of times to run, warmup runs etc.)
 
 ## Compare performance

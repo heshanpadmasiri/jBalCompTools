@@ -23,6 +23,10 @@ const (
 	Build Command = "build"
 )
 
+func CreateJarRunCommand(jarPath string) exec.Cmd {
+	return *exec.Command("java", "-jar", jarPath)
+}
+
 func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool) (exec.Cmd, error) {
 	balPath := BalPath(sourcePath, version)
 	switch command {
