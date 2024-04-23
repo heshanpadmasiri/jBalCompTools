@@ -32,6 +32,7 @@
 ## Direct measurements
 + [ ] Measure compile time
 + [ ] Measure execution time
++ [ ] Add ability to configure benchmarks (number of times to run, warmup runs etc.)
 
 ## Compare performance
 + [ ] Compare against a given ballerina release version

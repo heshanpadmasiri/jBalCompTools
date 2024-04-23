@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 type Command string
@@ -53,6 +54,61 @@ func ExecuteCommand(cmd *exec.Cmd) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+type BenchmarkResult struct {
+	Iterations int
+	AvgTime    time.Duration
+	MinTime    time.Duration
+	MaxTime    time.Duration
+}
+
+// TODO: also accept a configuration
+func BenchmarkCommand(cmd *exec.Cmd) (BenchmarkResult, error) {
+	nIterations := 10
+	elapsedTimes := make([]time.Duration, nIterations)
+	for i := 0; i < nIterations; i++ {
+		start := time.Now()
+		// create copy of cmd
+		cmdCopy := *cmd
+		err := ExecuteCommand(&cmdCopy)
+		elapsed := time.Since(start)
+		if err != nil {
+			return BenchmarkResult{}, err
+		}
+		elapsedTimes[i] = elapsed
+	}
+	return analyzeElapsedTimes(elapsedTimes), nil
+}
+
+func analyzeElapsedTimes(elapsedTimes []time.Duration) BenchmarkResult {
+	var sum time.Duration
+	min := elapsedTimes[0]
+	max := elapsedTimes[0]
+	for _, elapsed := range elapsedTimes {
+		sum += elapsed
+		if elapsed < min {
+			min = elapsed
+		}
+		if elapsed > max {
+			max = elapsed
+		}
+	}
+	n := len(elapsedTimes)
+	avg := sum / time.Duration(n)
+	return BenchmarkResult{
+		Iterations: n,
+		AvgTime:    avg,
+		MinTime:    min,
+		MaxTime:    max,
+	}
+}
+
+func PrettyPrintBenchmarkResult(result BenchmarkResult) {
+	fmt.Printf("Ran %d iterations\n", result.Iterations)
+	fmt.Printf("Average time: %v\n", result.AvgTime)
+	fmt.Printf("Minimum time: %v\n", result.MinTime)
+	fmt.Printf("Maximum time: %v\n", result.MaxTime)
 }
 
 func BalPath(srcPath, version string) string {
