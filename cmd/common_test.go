@@ -18,7 +18,7 @@ func TestCreateCommandRun(t *testing.T) {
 
 	expectedBalPath := BalPath(sourcePath, version)
 
-	expectedArgs := []string{expectedBalPath, string(command),  "--debug", "5005", targetPath}
+	expectedArgs := []string{expectedBalPath, string(command), "--debug", "5005", targetPath}
 	if !stringSlicesEqual(cmd.Args, expectedArgs) {
 		t.Errorf("Expected args to be %v, but got %v", expectedArgs, cmd.Args)
 	}
@@ -37,7 +37,7 @@ func TestCreateCommandBuild(t *testing.T) {
 	}
 
 	expectedBalPath := BalPath(sourcePath, version)
-	expectedArgs := []string{expectedBalPath, string( command), targetPath}
+	expectedArgs := []string{expectedBalPath, string(command), targetPath}
 	if !stringSlicesEqual(cmd.Args, expectedArgs) {
 		t.Errorf("Expected args to be %v, but got %v", expectedArgs, cmd.Args)
 	}
@@ -66,4 +66,15 @@ func stringSlicesEqual(a, b []string) bool {
 		}
 	}
 	return true
+}
+
+func TestCreateJarRunCommand(t *testing.T) {
+	jarPath := "/path/to/jar"
+
+	cmd := CreateJarRunCommand(jarPath)
+
+	expectedArgs := []string{"java", "-jar", jarPath}
+	if !stringSlicesEqual(cmd.Args, expectedArgs) {
+		t.Errorf("Expected args to be %v, but got %v", expectedArgs, cmd.Args)
+	}
 }
