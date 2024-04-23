@@ -69,10 +69,12 @@ func BenchmarkCommand(cmd *exec.Cmd) (BenchmarkResult, error) {
 	elapsedTimes := make([]time.Duration, nIterations)
 	for i := 0; i < nIterations; i++ {
 		start := time.Now()
-		// create copy of cmd
 		cmdCopy := *cmd
-		err := ExecuteCommand(&cmdCopy)
+		cmdCopy.Stdout = nil
+		cmdCopy.Stderr = os.Stderr
+		err := cmdCopy.Run()
 		elapsed := time.Since(start)
+		fmt.Println("Iteration: ", i, "elapsed: ", elapsed)
 		if err != nil {
 			return BenchmarkResult{}, err
 		}
