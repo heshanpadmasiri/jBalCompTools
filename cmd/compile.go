@@ -38,7 +38,7 @@ var compileCmd = &cobra.Command{
 		if len(args) > 0 {
 			targetPath = args[0]
 		} else {
-			if (viper.GetBool("file_comp")) {
+			if viper.GetBool("file_comp") {
 				fmt.Println("Please provide a file to compile")
 				os.Exit(1)
 			}
@@ -47,8 +47,14 @@ var compileCmd = &cobra.Command{
 		command, err := CreateCommand(viper.GetString("sourcePath"), viper.GetString("version"), targetPath, Build,
 			viper.GetBool("remote_comp"))
 		ConsumeError(err)
-		err = ExecuteCommand(&command)
-		ConsumeError(err)
+		if viper.GetBool("bench_comp") {
+			result, err := BenchmarkCommand(&command)
+			ConsumeError(err)
+			PrettyPrintBenchmarkResult(result)
+		} else {
+			err = ExecuteCommand(&command)
+			ConsumeError(err)
+		}
 	},
 }
 
@@ -56,8 +62,10 @@ func init() {
 	rootCmd.AddCommand(compileCmd)
 
 	compileCmd.Flags().BoolP("file", "f", false, "Run the given file")
-	compileCmd.Flags().BoolP("remote", "r", false, "Remote debug the runtime")
+	compileCmd.Flags().BoolP("remote", "r", false, "Remote debug the compiler")
+	compileCmd.Flags().BoolP("benchmark", "b", false, "Benchmark the compiler")
 
 	viper.BindPFlag("file_comp", compileCmd.Flags().Lookup("file"))
 	viper.BindPFlag("remote_comp", compileCmd.Flags().Lookup("remote"))
+	viper.BindPFlag("bench_comp", compileCmd.Flags().Lookup("benchmark"))
 }
