@@ -4,6 +4,27 @@ import (
 	"testing"
 )
 
+
+func TestCreateCommandTest(t *testing.T) {
+	sourcePath := "/path/to/source"
+	version := "1.0.0"
+	command := Test
+	targetPath := "/path/to/target"
+	remoteDebug := true
+
+	cmd, err := CreateCommand(sourcePath, version, targetPath, command, remoteDebug)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	expectedBalPath := BalPath(sourcePath, version)
+
+	expectedArgs := []string{expectedBalPath, string(command), "--debug", "5005", targetPath}
+	if !stringSlicesEqual(cmd.Args, expectedArgs) {
+		t.Errorf("Expected args to be %v, but got %v", expectedArgs, cmd.Args)
+	}
+}
+
 func TestCreateCommandRun(t *testing.T) {
 	sourcePath := "/path/to/source"
 	version := "1.0.0"

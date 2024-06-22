@@ -21,6 +21,7 @@ type Command string
 const (
 	Run   Command = "run"
 	Build Command = "build"
+	Test  Command = "test"
 )
 
 func CreateJarRunCommand(jarPath string) exec.Cmd {
@@ -34,6 +35,8 @@ func CreateCommand(sourcePath, version, targetPath string, command Command, remo
 		return createRunCommand(balPath, targetPath, remoteDebug), nil
 	case Build:
 		return createBuildCommand(balPath, targetPath, remoteDebug), nil
+	case Test:
+		return createTestCommand(balPath, targetPath, remoteDebug), nil
 	default:
 		return exec.Cmd{}, fmt.Errorf("unknown command: %s", command)
 	}
@@ -48,8 +51,16 @@ func createBuildCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
 	return *cmd
 }
 
+func createTestCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+	return createExecCommand(balPath, targetPath, "test", remoteDebug)
+}
+
 func createRunCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
-	args := []string{"run"}
+	return createExecCommand(balPath, targetPath, "run", remoteDebug)
+}
+
+func createExecCommand(balPath, targetPath, runCommand string, remoteDebug bool) exec.Cmd {
+	args := []string{runCommand}
 	if remoteDebug {
 		args = append(args, "--debug", "5005")
 	}
