@@ -28,22 +28,24 @@ func CreateJarRunCommand(jarPath string) exec.Cmd {
 	return *exec.Command("java", "-jar", jarPath)
 }
 
-func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool) (exec.Cmd, error) {
+func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool, args ...string) (exec.Cmd, error) {
 	balPath := BalPath(sourcePath, version)
 	switch command {
 	case Run:
-		return createRunCommand(balPath, targetPath, remoteDebug), nil
+		return createRunCommand(balPath, targetPath, remoteDebug, args...), nil
 	case Build:
-		return createBuildCommand(balPath, targetPath, remoteDebug), nil
+		return createBuildCommand(balPath, targetPath, remoteDebug, args...), nil
 	case Test:
-		return createTestCommand(balPath, targetPath, remoteDebug), nil
+		return createTestCommand(balPath, targetPath, remoteDebug, args...), nil
 	default:
 		return exec.Cmd{}, fmt.Errorf("unknown command: %s", command)
 	}
 }
 
-func createBuildCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
-	args := []string{"build", targetPath}
+func createBuildCommand(balPath, targetPath string, remoteDebug bool, extraArgs ...string) exec.Cmd {
+	args := []string{"build"}
+	args = append(args, extraArgs...)
+	args = append(args, targetPath)
 	cmd := exec.Command(balPath, args...)
 	if remoteDebug {
 		cmd.Env = append(os.Environ(), "BAL_JAVA_DEBUG=5005")
@@ -51,11 +53,11 @@ func createBuildCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
 	return *cmd
 }
 
-func createTestCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+func createTestCommand(balPath, targetPath string, remoteDebug bool, extraArgs ...string) exec.Cmd {
 	return createExecCommand(balPath, targetPath, "test", remoteDebug)
 }
 
-func createRunCommand(balPath, targetPath string, remoteDebug bool) exec.Cmd {
+func createRunCommand(balPath, targetPath string, remoteDebug bool, extraArgs ...string) exec.Cmd {
 	return createExecCommand(balPath, targetPath, "run", remoteDebug)
 }
 
