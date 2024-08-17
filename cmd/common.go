@@ -7,7 +7,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -75,7 +74,6 @@ func createExecCommand(balPath, targetPath, runCommand string, remoteDebug bool)
 func ExecuteCommand(cmd *exec.Cmd) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	log.Println("Executing cmd")
 	return cmd.Run()
 }
 
@@ -214,11 +212,10 @@ func ConsumeError(err error) {
 }
 
 func buildCompilerIfneeded(sourcePath, version string) error {
-	balPath := BalPath(sourcePath, version)
-	if !compilerExists(balPath) {
+	if shouldRebuildToolChain(sourcePath, version) {
 		return BuildCompiler(sourcePath, "build -x check")
 	}
-	return nil;
+	return nil
 }
 
 func BuildCompiler(path, flags string) error {
@@ -228,7 +225,45 @@ func BuildCompiler(path, flags string) error {
 	return ExecuteCommand(cmd)
 }
 
+func shouldRebuildToolChain(sourcePath, version string) bool {
+	balPath := BalPath(sourcePath, version)
+	if !compilerExists(balPath) {
+		return true
+	}
+	if sourceIsNewerThanCompiler(sourcePath, balPath) {
+		return true
+	}
+	return false
+}
+
+func sourceIsNewerThanCompiler(sourcePath, balPath string) bool {
+	compilerStat, err := os.Stat(balPath)
+	// This shouldn't happen since we have already verified compiler exists
+	ConsumeError(err)
+	compilerTimeStamp := compilerStat.ModTime()
+	return anyFileAfter(sourcePath, compilerTimeStamp, ".java")
+}
+
+func anyFileAfter(rootPath string, timeStamp time.Time, extensions... string) bool {
+	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		for _, ext := range extensions {
+			if strings.Contains(path, "src") && filepath.Ext(path) == ext && info.ModTime().After(timeStamp) {
+				return fmt.Errorf("file after")
+			}
+		}
+		return nil
+	})
+	if err != nil && err.Error() == "file after" {
+		return true
+	}
+	return false
+}
+
 func compilerExists(balPath string) bool {
 	_, err := os.Stat(balPath)
-	return err == nil;
+	return err == nil
 }
