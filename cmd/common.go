@@ -29,7 +29,11 @@ func CreateJarRunCommand(jarPath string) exec.Cmd {
 }
 
 func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool, args ...string) (exec.Cmd, error) {
-	ConsumeError(buildCompilerIfneeded(sourcePath, version))
+	ConsumeError(buildCompilerIfNeeded(sourcePath, version))
+	return CreateCommandInner(sourcePath, version, targetPath, command, remoteDebug, args...)
+}
+
+func CreateCommandInner(sourcePath, version, targetPath string, command Command, remoteDebug bool, args ...string) (exec.Cmd, error) {
 	balPath := BalPath(sourcePath, version)
 	switch command {
 	case Run:
@@ -211,7 +215,7 @@ func ConsumeError(err error) {
 	}
 }
 
-func buildCompilerIfneeded(sourcePath, version string) error {
+func buildCompilerIfNeeded(sourcePath, version string) error {
 	if shouldRebuildToolChain(sourcePath, version) {
 		return BuildCompiler(sourcePath, "build -x check")
 	}
