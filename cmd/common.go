@@ -7,6 +7,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,6 +30,7 @@ func CreateJarRunCommand(jarPath string) exec.Cmd {
 }
 
 func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool, args ...string) (exec.Cmd, error) {
+	ConsumeError(buildCompilerIfneeded(sourcePath, version))
 	balPath := BalPath(sourcePath, version)
 	switch command {
 	case Run:
@@ -73,6 +75,7 @@ func createExecCommand(balPath, targetPath, runCommand string, remoteDebug bool)
 func ExecuteCommand(cmd *exec.Cmd) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	log.Println("Executing cmd")
 	return cmd.Run()
 }
 
@@ -210,10 +213,22 @@ func ConsumeError(err error) {
 	}
 }
 
+func buildCompilerIfneeded(sourcePath, version string) error {
+	balPath := BalPath(sourcePath, version)
+	if !compilerExists(balPath) {
+		return BuildCompiler(sourcePath, "build -x check")
+	}
+	return nil;
+}
 
 func BuildCompiler(path, flags string) error {
 	args := strings.Split(strings.Trim(flags, " "), " ")
 	cmd := exec.Command("./gradlew", args...)
 	cmd.Dir = path
 	return ExecuteCommand(cmd)
+}
+
+func compilerExists(balPath string) bool {
+	_, err := os.Stat(balPath)
+	return err == nil;
 }
