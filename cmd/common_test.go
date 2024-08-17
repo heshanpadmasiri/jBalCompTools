@@ -4,15 +4,14 @@ import (
 	"testing"
 )
 
-
 func TestCreateCommandTest(t *testing.T) {
-	sourcePath := "/path/to/source"
+	sourcePath := "./path/to/source1"
 	version := "1.0.0"
 	command := Test
 	targetPath := "/path/to/target"
 	remoteDebug := true
 
-	cmd, err := CreateCommand(sourcePath, version, targetPath, command, remoteDebug)
+	cmd, err := CreateCommandInner(sourcePath, version, targetPath, command, remoteDebug)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -26,13 +25,13 @@ func TestCreateCommandTest(t *testing.T) {
 }
 
 func TestCreateCommandRun(t *testing.T) {
-	sourcePath := "/path/to/source"
+	sourcePath := "./path/to/source2"
 	version := "1.0.0"
 	command := Run
 	targetPath := "/path/to/target"
 	remoteDebug := true
 
-	cmd, err := CreateCommand(sourcePath, version, targetPath, command, remoteDebug)
+	cmd, err := CreateCommandInner(sourcePath, version, targetPath, command, remoteDebug)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -46,13 +45,13 @@ func TestCreateCommandRun(t *testing.T) {
 }
 
 func TestCreateCommandBuild(t *testing.T) {
-	sourcePath := "/path/to/source"
+	sourcePath := "./path/to/source3"
 	version := "1.0.0"
 	command := Build
 	targetPath := "/path/to/target"
 	remoteDebug := true
 
-	cmd, err := CreateCommand(sourcePath, version, targetPath, command, remoteDebug)
+	cmd, err := CreateCommandInner(sourcePath, version, targetPath, command, remoteDebug)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}

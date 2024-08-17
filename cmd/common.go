@@ -29,6 +29,11 @@ func CreateJarRunCommand(jarPath string) exec.Cmd {
 }
 
 func CreateCommand(sourcePath, version, targetPath string, command Command, remoteDebug bool, args ...string) (exec.Cmd, error) {
+	ConsumeError(buildCompilerIfNeeded(sourcePath, version))
+	return CreateCommandInner(sourcePath, version, targetPath, command, remoteDebug, args...)
+}
+
+func CreateCommandInner(sourcePath, version, targetPath string, command Command, remoteDebug bool, args ...string) (exec.Cmd, error) {
 	balPath := BalPath(sourcePath, version)
 	switch command {
 	case Run:
@@ -208,4 +213,61 @@ func ConsumeError(err error) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func buildCompilerIfNeeded(sourcePath, version string) error {
+	if shouldRebuildToolChain(sourcePath, version) {
+		return BuildCompiler(sourcePath, "build -x check")
+	}
+	return nil
+}
+
+func BuildCompiler(path, flags string) error {
+	args := strings.Split(strings.Trim(flags, " "), " ")
+	cmd := exec.Command("./gradlew", args...)
+	cmd.Dir = path
+	return ExecuteCommand(cmd)
+}
+
+func shouldRebuildToolChain(sourcePath, version string) bool {
+	balPath := BalPath(sourcePath, version)
+	if !compilerExists(balPath) {
+		return true
+	}
+	if sourceIsNewerThanCompiler(sourcePath, balPath) {
+		return true
+	}
+	return false
+}
+
+func sourceIsNewerThanCompiler(sourcePath, balPath string) bool {
+	compilerStat, err := os.Stat(balPath)
+	// This shouldn't happen since we have already verified compiler exists
+	ConsumeError(err)
+	compilerTimeStamp := compilerStat.ModTime()
+	return anyFileAfter(sourcePath, compilerTimeStamp, ".java")
+}
+
+func anyFileAfter(rootPath string, timeStamp time.Time, extensions... string) bool {
+	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		for _, ext := range extensions {
+			if strings.Contains(path, "src") && filepath.Ext(path) == ext && info.ModTime().After(timeStamp) {
+				return fmt.Errorf("file after")
+			}
+		}
+		return nil
+	})
+	if err != nil && err.Error() == "file after" {
+		return true
+	}
+	return false
+}
+
+func compilerExists(balPath string) bool {
+	_, err := os.Stat(balPath)
+	return err == nil
 }
