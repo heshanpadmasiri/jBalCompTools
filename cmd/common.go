@@ -209,3 +209,11 @@ func ConsumeError(err error) {
 		os.Exit(1)
 	}
 }
+
+
+func BuildCompiler(path, flags string) error {
+	args := strings.Split(strings.Trim(flags, " "), " ")
+	cmd := exec.Command("./gradlew", args...)
+	cmd.Dir = path
+	return ExecuteCommand(cmd)
+}
