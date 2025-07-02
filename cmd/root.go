@@ -34,6 +34,18 @@ func init() {
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println("Can't read config:", err)
+		os.Exit(1)
+	}
+	if viper.GetString("version") == "" {
+		fmt.Println("Version not set in config, Checking gradle.properties")
+		version, err := GetVersionFromGradleProperties(viper.GetString("sourcePath"))
+		if err != nil {
+			fmt.Println("Error getting version from gradle.properties:", err)
+			os.Exit(1)
+		} else {
+			fmt.Println("Version found in gradle.properties:", version)
+			viper.Set("version", version)
+		}
 	}
 
 	rootCmd.PersistentFlags().StringP("sourcePath", "s", viper.GetString("defaultSourcePath"), "Path to jBallerina source code")

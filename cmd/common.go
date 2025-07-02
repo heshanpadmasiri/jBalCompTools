@@ -6,6 +6,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
@@ -265,6 +266,24 @@ func anyFileAfter(rootPath string, timeStamp time.Time, extensions... string) bo
 		return true
 	}
 	return false
+}
+
+func GetVersionFromGradleProperties(sourcePath string) (string, error) {
+	gradlePropsPath := filepath.Join(sourcePath, "gradle.properties")
+	file, err := os.Open(gradlePropsPath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "version=") {
+			return strings.TrimSpace(strings.TrimPrefix(line, "version=")), nil
+		}
+	}
+	return "", fmt.Errorf("version not found in gradle.properties")
 }
 
 func compilerExists(balPath string) bool {
